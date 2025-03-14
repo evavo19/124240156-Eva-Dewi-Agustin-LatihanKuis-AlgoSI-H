@@ -238,7 +238,6 @@ void hapus_buku()
         jumlah_buku--; // mengurangi jumlah buku karena salah satu buku telah dihapus
         cout << "Buku dengan ID " << id_buku << " berhasil dihapus.\n";
 
-        // save to file mode w
         remove(nama_file);
 
         for (auto b : daftar_buku)
