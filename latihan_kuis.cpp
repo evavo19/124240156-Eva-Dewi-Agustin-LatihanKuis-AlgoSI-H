@@ -51,11 +51,11 @@ void baca_bukuFile()
     {
         jumlah_buku++;
     }
+    fclose(fptr);
 }
 
 User login() // fungsi login untuk memasukkan username dan password
 {
-
     User user;
     cout << "\nLOGIN KE DATABASE PERPUSTARAKAAN!\n";
 
@@ -124,7 +124,7 @@ void tampilkan_buku()
     {
         for (int j = 0; j < jumlah_buku - i - 1; j++) // membandingkan elemen yang berdekatan
         {
-            if ((daftar_buku[j].ID, daftar_buku[j + 1].ID) > 0) // jika id buku lebih besar maka tukar posisi
+            if (strcmp(daftar_buku[j].ID, daftar_buku[j + 1].ID) > 0) // jika id buku lebih besar maka tukar posisi
             {
                 // tukar posisi buku (swap)
                 buku temp = daftar_buku[j];
@@ -240,9 +240,9 @@ void hapus_buku()
 
         remove(nama_file);
 
-        for (auto b : daftar_buku)
+        for (int i = 0; i < jumlah_buku; i++)
         {
-            simpan_bukuFile(b);
+            simpan_bukuFile(daftar_buku[i]);
         }
     }
 }
