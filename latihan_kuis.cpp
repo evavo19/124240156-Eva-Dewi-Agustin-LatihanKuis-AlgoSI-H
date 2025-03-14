@@ -5,9 +5,9 @@ using namespace std;
 
 struct buku // struktur data menyimpan data buku
 {
-    char ID[5];
-    string judul;
-    string penulis;
+    char ID[6];
+    char judul[25];
+    char penulis[30];
     int stok;
 };
 
@@ -20,6 +20,38 @@ struct User // struktur data menyimpan data user atau pemakai program
 const int max_buku = 100;   // kapasitas maksimal data buku
 buku daftar_buku[max_buku]; // array untuk menyimpan data buku
 int jumlah_buku = 0;        // jumlah data buku yang sudah diinput
+const char *nama_file = "data.dat";
+
+void simpan_bukuFile(buku simpan_buku)
+{
+    FILE *fptr = fopen(nama_file, "a");
+
+    if (fptr == NULL)
+    {
+        cout << "Tidak, dapat membuka file.\n";
+        exit(1);
+    }
+
+    fprintf(fptr, "%s | %s | %s | %d\n", simpan_buku.ID, simpan_buku.judul, simpan_buku.penulis, simpan_buku.stok);
+    fclose(fptr);
+}
+
+void baca_bukuFile()
+{
+    FILE *fptr = fopen(nama_file, "r");
+
+    if (fptr == NULL)
+    {
+        cout << "Tidak, dapat membuka file.\n";
+        exit(1);
+    }
+
+    // ID | judul | nama penulis | stok
+    while (fscanf(fptr, "%s %*s %[^|] %*s %[^|] %*s %d\n\n", &daftar_buku[jumlah_buku].ID, &daftar_buku[jumlah_buku].judul, &daftar_buku[jumlah_buku].penulis, &daftar_buku[jumlah_buku].stok) != EOF)
+    {
+        jumlah_buku++;
+    }
+}
 
 User login() // fungsi login untuk memasukkan username dan password
 {
@@ -64,28 +96,19 @@ void tambah_buku()
     cin.ignore();
 
     cout << "Judul Buku \t: "; // memasukkan judul buku
-    getline(cin, buku_baru.judul);
+    cin.getline(buku_baru.judul, 25);
 
     cout << "Penulis Buku \t: "; // memasukkan penulis buku
-    getline(cin, buku_baru.penulis);
+    cin.getline(buku_baru.penulis, 30);
 
     cout << "Stok Buku \t: "; // memasukkan stok buku
     cin >> buku_baru.stok;
 
     // menambahkan data buku baru ke dalam array daftar_buku
     daftar_buku[jumlah_buku] = buku_baru;
+    simpan_bukuFile(daftar_buku[jumlah_buku]);
     jumlah_buku++; // menambah jumlah buku yang sudah diinput
     cout << "Buku berhasil ditambahkan!\n";
-
-    FILE *fptr = fopen("data.dat", "ab"); // membuka file data.dat
-
-    if (fptr == NULL) // cek apakah file berhasil dibuka atau tidak
-    {
-        cout << "Error! Tidak bisa membuka file.\n";
-        exit(1);
-    }
-    fwrite(&buku_baru, sizeof(buku), 1, fptr); // menyimpan data buku ke dalam file
-    fclose(fptr);                              // menutup file data.dat
 }
 
 void tampilkan_buku()
@@ -132,31 +155,32 @@ void tampilkan_buku()
 
 void cari_buku()
 {
-    string kata_kunci;
+    string kata_kunci; // untuk menyimpan kata kunci pencarian
     cout << "Masukkan Kata Kunci dari judul buku yang dicari : ";
     cin.ignore();
-    getline(cin, kata_kunci);
+    getline(cin, kata_kunci); // input kata kunci yang dicari
 
     buku buku_ditemukan[jumlah_buku];
-    int jumlahBuku_ditemukan = 0;
+    int jumlahBuku_ditemukan = 0; // menyimpan jumlah buku yang ditetapkan
 
+    // looping mencari buku berdasarkan kata kunci di dalam daftar_buku
     for (int i = 0; i < jumlah_buku; i++)
     {
-        if (daftar_buku[i].judul.find(kata_kunci) != string::npos)
+        if (strstr(daftar_buku[i].judul, kata_kunci.c_str()) != nullptr)
         {
             buku_ditemukan[jumlahBuku_ditemukan] = daftar_buku[i];
             jumlahBuku_ditemukan++;
         }
     }
 
-    if (jumlahBuku_ditemukan == 0)
+    if (jumlahBuku_ditemukan == 0) // jika tidak ada buku yang di temukan
     {
         cout << "\nBuku dengan kata kunci " << kata_kunci << " tidak ditemukan.\n";
     }
 
     else
     {
-        cout << "\nBuku dengan kata kunci " << kata_kunci << " ditemukan.\n";
+        cout << "\nBuku dengan kata kunci " << kata_kunci << " ditemukan.\n"; // jika buku di temukan
 
         cout << "======================================================================\n";
         cout << setw(10) << left << "ID"
@@ -167,7 +191,7 @@ void cari_buku()
 
         for (int i = 0; i < jumlah_buku; i++)
         {
-            if (daftar_buku[i].judul.find(kata_kunci) != string::npos)
+            if (strstr(daftar_buku[i].judul, kata_kunci.c_str()) != nullptr)
             {
                 cout << setw(10) << left << daftar_buku[i].ID
                      << setw(30) << daftar_buku[i].judul
@@ -181,6 +205,7 @@ void cari_buku()
 
 void hapus_buku()
 {
+    // menampilkan daftar buku sebelum dihapus agar user dapat melihat ID buku
     tampilkan_buku();
 
     string id_buku;
@@ -189,16 +214,17 @@ void hapus_buku()
 
     int index_hapus = -1; // index data buku yang akan dihapus
 
+    // mencari buku berdasarkan ID
     for (int i = 0; i < jumlah_buku; i++)
     {
         if (strcmp(daftar_buku[i].ID, id_buku.c_str()) == 0)
         {
-            index_hapus = i;
+            index_hapus = i; // menyimpan index buku yang ditemukan
             break;
         }
     }
 
-    if (index_hapus == -1)
+    if (index_hapus == -1) // jika buku tidak ditemukan, akan muncul pesan
     {
         cout << "Buku dengan ID " << id_buku << " tidak ditemukan.\n";
         return;
@@ -207,17 +233,19 @@ void hapus_buku()
     {
         for (int i = index_hapus; i < jumlah_buku - 1; i++)
         {
-            daftar_buku[i] = daftar_buku[i + 1];
+            daftar_buku[i] = daftar_buku[i + 1]; // menimpa data ke i dengan data selanjutnya
         }
-        jumlah_buku--;
+        jumlah_buku--; // mengurangi jumlah buku karena salah satu buku telah dihapus
         cout << "Buku dengan ID " << id_buku << " berhasil dihapus.\n";
-    }
 
-    // tampilkan data buku
-    // minta user input ID yang mau dihapus
-    // cari apakah ada datanya?
-    // jika ada, maka hapus dari array lalu tampilkan data buku
-    // save file lagi sama kayak kamu input, tapi sekarang semua data di daftar buku
+        // save to file mode w
+        remove(nama_file);
+
+        for (auto b : daftar_buku)
+        {
+            simpan_bukuFile(b);
+        }
+    }
 }
 
 int main()
@@ -225,12 +253,12 @@ int main()
     int pilih;
     char kembali;
 
-    // User user = login();
+    User user = login();
 
-    // Baca data data yang ada di file fread
+    baca_bukuFile();
     do
     {
-        // cout << "\nHallo, " << user.username << "! SELAMAT DATANG DI DATABASE PERPUSTAKAAN INFORMATIKA!" << endl;
+        cout << "\nHallo, " << user.username << "! SELAMAT DATANG DI DATABASE PERPUSTAKAAN INFORMATIKA!" << endl;
         cout << "1. Tambah Data Buku" << endl;
         cout << "2. Tampilkan Daftar Buku" << endl;
         cout << "3. Cari Buku" << endl;
