@@ -24,7 +24,7 @@ const char *nama_file = "data.dat";
 
 void simpan_bukuFile(buku simpan_buku)
 {
-    FILE *fptr = fopen(nama_file, "a");
+    FILE *fptr = fopen(nama_file, "ab");
 
     if (fptr == NULL)
     {
@@ -32,13 +32,13 @@ void simpan_bukuFile(buku simpan_buku)
         exit(1);
     }
 
-    fprintf(fptr, "%s | %s | %s | %d\n", simpan_buku.ID, simpan_buku.judul, simpan_buku.penulis, simpan_buku.stok);
+    fwrite(&simpan_buku, sizeof(buku), 1, fptr);
     fclose(fptr);
 }
 
 void baca_bukuFile()
 {
-    FILE *fptr = fopen(nama_file, "r");
+    FILE *fptr = fopen(nama_file, "rb");
 
     if (fptr == NULL)
     {
@@ -47,7 +47,7 @@ void baca_bukuFile()
     }
 
     // ID | judul | nama penulis | stok
-    while (fscanf(fptr, "%s %*s %[^|] %*s %[^|] %*s %d\n\n", &daftar_buku[jumlah_buku].ID, &daftar_buku[jumlah_buku].judul, &daftar_buku[jumlah_buku].penulis, &daftar_buku[jumlah_buku].stok) != EOF)
+    while (fread(&daftar_buku[jumlah_buku], sizeof(buku), 1, fptr))
     {
         jumlah_buku++;
     }
